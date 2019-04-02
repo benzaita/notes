@@ -64,7 +64,7 @@ When the state is managed in one place, and consumed in another, we need to some
 
 ### Redux
 
-Take Redux for example: the state is managed in the Redux store and consumed in downstream components. The way to connect the two is to use the `connect` function provided by `react-redux`.
+Take Redux for example: the state is managed in the Redux store (provided by the `<Provider/>` component) and consumed in downstream components. The way to connect the two is to use the `connect` function provided by `react-redux`.
 
 ```jsx
 const Counter = connect(
@@ -85,21 +85,70 @@ const Counter = connect(
 To isolate the behavior we can separate that a bit:
 
 ```js
-const withIncrementor = connect(
-  state => ({
-    value: state.value
-  }),
-  dispatch => ({
-    increment: dispatch({type: 'increment'})
-  })
+// to consume using a HOC
+export const withIncrementor = (propName = 'incrementor') =>
+  connect(
+    state => ({
+      [propName]: {
+        value: state.value
+      }
+    }),
+    dispatch => ({
+      [propName]: {
+        increment: dispatch({type: 'increment'})
+      }
+    })
+  )
+
+// to consume using render props
+export const Consumer = withIncrementor()(
+  ({children, incrementor}) => props.children(incrementor)
 )
 
-export default withIncrementor
+// to consume using a hook
+// TODO useRedux()??
 ```
 
 ### React Context
 
-TBD
+```jsx
+const reactContext = React.createContext()
+
+class IncrementorProvider extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { value: 1 }
+    this.handlers = {
+      increment: () => this.setState({ value: this.state.value + 1 })
+    }
+  }
+  
+  render() {
+    return (
+      <reactContext.Provider value={{...this.state, ...this.handlers}}>
+        {this.props.children}
+      </reactContext.Provider>
+    )
+  }
+}
+
+export const Provider = IncrementorProvider
+
+// to consume using render props
+export const Consumer = reactContext.Consumer
+
+// to consume using a HOC
+export const withIncrementor =
+  (propName = 'incrementor') => WrappedComponent => props =>
+    <reactContext.Consumer>
+      { incrementor =>
+        <WrappedComponent {{...props, [propName]: incrementor}}/>
+      }
+    </reactContext.Consumer>
+
+// to consume using a hook
+export useIncrementor = useContext(reactContext)
+```
 
 ----------
 
