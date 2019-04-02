@@ -97,4 +97,34 @@ const withIncrementor = connect(
 export default withIncrementor
 ```
 
+### React Context
 
+TBD
+
+----------
+
+## Ways to consume props in React
+
+Direct: explicitly "thread" the props down the component tree.
+
+👎 just kill me
+
+HOC: provide the props to a wrapped component by wrapping it with a higher-order-component.
+
+👎 props are passed implicitly
+👎 all props are merged together
+👎 nesting hell
+
+Render props
+
+👎 nesting hell
+
+Hooks
+
+👎 ?
+
+## Ways to share state (???)
+
+React Context
+
+Redux
